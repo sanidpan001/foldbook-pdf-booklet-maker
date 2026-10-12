@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoldBook — PDF Booklet Maker: Print Fold-and-Staple Booklets from Any PDF</title>
+<meta name="description" content="Free booklet imposition tool. Reorder any PDF's pages for double-sided fold-and-staple printing, with blank padding and a sheet-by-sheet print guide.">
+<link rel="canonical" href="https://foldbook.fixoraa.tech/">
+<meta property="og:title" content="FoldBook — PDF Booklet Maker: Print Fold-and-Staple Booklets from Any PDF">
+<meta property="og:description" content="Free booklet imposition tool. Reorder any PDF's pages for double-sided fold-and-staple printing, with blank padding and a sheet-by-sheet print guide.">
+<meta property="og:url" content="https://foldbook.fixoraa.tech/">
+<meta property="og:type" content="website">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
+<style>
+:root{--pri:#7C2D12;--acc:#22C55E;--bgc:#FFF7ED}
+body{background:var(--bgc);font-family:'Segoe UI',system-ui,sans-serif}
+.pri{background:var(--pri)} .prit{color:var(--pri)}
+.btn{background:var(--pri);color:#fff;padding:.6rem 1.2rem;border-radius:.6rem;font-weight:600;cursor:pointer;border:none}
+.btn:hover{opacity:.9} .btn2{background:var(--acc);color:#111;padding:.6rem 1.2rem;border-radius:.6rem;font-weight:600;cursor:pointer;border:none}
+.btn:disabled,.btn2:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{border:1.5px solid #cbd5e1;border-radius:.55rem;padding:.55rem .7rem;width:100%;background:#fff;color:#0f172a}
+input[type=file]{padding:.45rem .6rem} input[type=range]{padding:0} input[type=checkbox],input[type=radio]{width:auto}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);border-color:transparent}
+label{font-size:.83rem;font-weight:600;display:block;margin-bottom:.3rem}
+.card{background:#fff;border-radius:1rem;box-shadow:0 8px 30px rgba(15,23,42,.08);padding:1.4rem}
+article p{margin:.7rem 0;line-height:1.75;color:#334155}
+article h2{font-size:1.45rem;font-weight:800;margin:1.6rem 0 .4rem;color:#0f172a}
+.faq{background:#fff;border-radius:.7rem;padding:.9rem 1.1rem;margin:.55rem 0;box-shadow:0 2px 10px rgba(15,23,42,.05)}
+.faq summary{font-weight:700;cursor:pointer}
+table.dt{width:100%;border-collapse:collapse} table.dt th,table.dt td{border:1px solid #e2e8f0;padding:.45rem .6rem;text-align:left;font-size:.9rem}
+table.dt th{background:#f1f5f9}
+.drop{border:2px dashed #94a3b8;border-radius:.8rem;padding:1.1rem;text-align:center;background:#f8fafc}
+canvas.prev{max-width:100%;border:1px solid #e2e8f0;border-radius:.5rem;background:#fff}
+
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "FoldBook", "url": "https://foldbook.fixoraa.tech/", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free booklet imposition tool. Reorder any PDF's pages for double-sided fold-and-staple printing, with blank padding and a sheet-by-sheet print guide."}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why must booklet pages be a multiple of 4?", "acceptedAnswer": {"@type": "Answer", "text": "Each sheet carries four pages \u2014 two per side. FoldBook pads short documents with blanks at the end automatically, and the sheet map shows exactly where those blanks fall."}}, {"@type": "Question", "name": "Which duplex setting should I use?", "acceptedAnswer": {"@type": "Answer", "text": "Flip on the SHORT edge. It is the booklet-correct setting; long-edge flipping (the usual default) turns alternate sides upside down."}}, {"@type": "Question", "name": "What size booklet will I get?", "acceptedAnswer": {"@type": "Answer", "text": "A4 landscape sheets fold to an A5 booklet; US Letter landscape folds to a half-letter booklet. Each original page is scaled to fit its half-sheet cell without distortion."}}, {"@type": "Question", "name": "How thick can a fold-and-staple booklet be?", "acceptedAnswer": {"@type": "Answer", "text": "Up to about 64 pages (16 sheets) folds and staples comfortably. Beyond that the spine bulges \u2014 split longer works into volumes for a clean result."}}, {"@type": "Question", "name": "How do I know the order will be right before printing?", "acceptedAnswer": {"@type": "Answer", "text": "The sheet map lists every sheet's front and back pages. Trace it: cover outside, then 2\u20133, 4\u20135 in order as you turn. Print one test sheet and fold it if you want physical proof."}}, {"@type": "Question", "name": "Is my PDF uploaded anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Imposition runs entirely in your browser; your document never leaves your device."}}]}</script>
+</head>
+<body id="top">
+<header class="sticky top-0 z-40 shadow-md" style="background:#431407">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between">
+    <a href="#top" class="text-xl font-extrabold tracking-tight" style="color:#FFF7ED">📖 FoldBook</a>
+    <nav class="flex gap-5 text-sm font-semibold" style="color:#FFF7ED">
+      <a href="#top" class="hover:underline">Home</a>
+      <a href="https://fixoraa.tech" class="hover:underline">More Tools</a>
+    </nav>
+  </div>
+</header>
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+  <div class="text-center mb-6">
+    <h1 class="text-3xl sm:text-4xl font-extrabold" style="color:#0f172a">Make a Booklet from a PDF — Print, Fold, Staple</h1>
+    <p class="mt-2 text-slate-600 max-w-2xl mx-auto">A stack of A4 pages becomes a proper booklet when the pages are imposed correctly: last page beside first, second beside second-to-last. FoldBook does that maths, pads blanks automatically, and gives you a print guide anyone can follow.</p>
+    <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold text-white pri">✓ Unlimited Free Usage — No Signup, No Watermark</span>
+    <p class="mt-2 text-xs text-slate-500">🔒 100% private: your file is processed entirely in your browser and never uploaded to any server.</p>
+  </div>
+  <div class="grid md:grid-cols-5 gap-6">
+  <div class="card md:col-span-2 space-y-3">
+    <div class="drop"><label>Your PDF (read in normal order)</label><input id="file" type="file" accept="application/pdf"></div>
+    <div><label>Sheet</label><select id="sheet"><option value="a4l">A4 landscape (booklet of A5 pages)</option><option value="letl">US Letter landscape (half-letter pages)</option></select></div>
+    <div><label><input type="checkbox" id="border"> Light cell borders (helps first test print)</label></div>
+    <button class="btn w-full" id="go" onclick="run()">Build Booklet PDF</button>
+    <button class="btn2 w-full" id="dl" style="display:none">⬇ Download booklet PDF</button>
+    <p id="status" class="text-sm font-semibold"></p>
+    <p class="text-xs text-slate-500">Print the booklet file double-sided, flipping on the SHORT edge, then fold the whole stack in half and staple the spine.</p>
+  </div>
+  <div class="card md:col-span-3">
+    <h3 class="font-bold mb-2">Sheet map &amp; print guide</h3>
+    <div id="map" class="overflow-x-auto text-sm text-slate-600">Load a PDF to see its sheet map: which original pages land on each sheet, front and back — the table that proves the fold will read 1, 2, 3… in order.</div>
+  </div></div>
+</main>
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="464498"></script>
+    </div>
+  </div>
+</div>
+<section class="mx-auto max-w-4xl px-4 sm:px-6 pb-6">
+  <article>
+  <h2>The small miracle of a folded booklet</h2>
+<p>Take four pages in reading order, print them naively, fold — and the result is nonsense: page two on the back of page four, the ending facing the cover. Booklets only work because imposition rearranges pages before printing so that after the stack is folded, they fall in sequence. The pairing obeys a simple, unforgiving pattern: the last page sits beside the first, the second beside the second-to-last, and so on inward. Get one pair wrong and the whole booklet unravels — which is why doing this by hand for a 24-page programme is an afternoon of swearing, and doing it by tool is thirty seconds.</p>
+<p>FoldBook applies that pattern exactly, and proves it before you print: the sheet map lists, for every physical sheet, which original pages appear on its front and back, left and right. Read the map and you can simulate the fold in your head — cover outside, pages turning in order, final page on the back cover. When the map reads correctly, the paper will too.</p>
+<h2>Padding: why booklets demand multiples of four</h2>
+<p>Every physical sheet carries four booklet pages — two on the front, two on the back — so a booklet's page count must be a multiple of four. Real documents rarely oblige: the 18-page report, the 22-page programme. FoldBook pads automatically, inserting blank pages at the end of the sequence where padding belongs — inside the back cover region — so the reading pages are never disturbed and the fold still works. The sheet map calls out the blanks honestly, so you know precisely which leaves of the finished booklet will be empty.</p>
+<p>Those end blanks are rarely wasted in practice. They become the notes page at the back of a workbook, the sponsor page of a programme, the 'intentionally left blank' of formal documents. If the count offends you, the other fix is editorial: add a contents page, a colophon, an about page — real content that brings the total to a multiple of four with dignity. The tool pads without judgement either way; the booklet folds correctly regardless.</p>
+<h2>How to build and print your booklet, step by step</h2>
+<p>Load your normally-ordered PDF, choose the sheet — A4 landscape yields an A5 booklet, the world's commonest format; Letter landscape yields a half-letter booklet — and press Build. Download the booklet file, then print it double-sided with one critical setting: flip on the short edge. Long-edge flipping is the default for ordinary duplex documents and it will put every second side upside down in a booklet; short-edge is the booklet-correct choice, and the sheet map preview assumes it.</p>
+<p>Print one test sheet first if it is your first booklet, fold it, and confirm the four pages sit in sequence. Then print the full stack, keep the sheets in order as they emerge, fold the whole pile in half together — aligning edges carefully — crease firmly, and staple twice along the spine with a long-arm stapler, or saddle-stitch with needle and thread for the handmade finish. The result reads, opens and shelves like a real booklet, because geometrically it is one.</p>
+<h2>Choosing paper, size and finish like a practitioner</h2>
+<p>An A5 booklet from A4 sheets is the sweet spot for hand-held reading: programmes, zines, manuals, poetry collections, training workbooks. Half-letter serves the same role in North America. Page count has a practical ceiling — beyond roughly 64 pages (16 sheets) the folded spine bulges and the booklet stops lying flat without professional binding; split long works into volumes, which readers secretly prefer anyway.</p>
+<p>Paper weight matters at the fold. Standard 80gsm office paper folds cleanly for slim booklets; heavier stocks score better before folding to prevent cracked toner along the spine. If your pages carry dark, full-bleed imagery, expect slight show-through on thin paper and step up a weight. And leave the cell borders on for your first test print — they make fold alignment visible — then rebuild without them for the clean final run.</p>
+<h2>Who still makes booklets, and why</h2>
+<p>More people than the paperless age suggests. Event programmes and orders of service are booklets by birth. Community theatres, school concerts, wedding parties, conference organisers and places of worship print them weekly. Independent publishers run zines and chapbooks in the hundreds on exactly this imposition. Trainers bind workbooks; field teams bind checklists and safety manuals that must survive a glovebox; families bind recipe collections and memorial books that deserve to open properly.</p>
+<p>The common thread is respect for the reader: a booklet lies flat-ish, keeps its pages in order without clips or binders, fits a pocket or a pew rack, and feels finished. When the content matters enough to print at all, it usually matters enough to impose — and with the maths automated, 'enough' is a very low bar to clear.</p>
+<h2>Privacy and practical craft</h2>
+<p>Programmes list names; memorial books list the beloved; internal manuals list procedures. FoldBook imposes your PDF inside your browser tab — the file never leaves your device, and the imposed copy is generated locally, ready to download. Drafts of sensitive booklets stay as private as the originals.</p>
+<p>A final craft note: printers vary in duplex alignment by a millimetre or two, which is why booklet pages are imposed with breathing room around each cell rather than stretched edge to edge. That margin is deliberate — it forgives mechanical drift so text never kisses the fold or the trim. Trust it, print your test sheet, and fold with confidence.</p>
+<h2>Folding, creasing and stapling like you mean it</h2>
+<p>Align the stack on a hard surface by tapping its foot and spine edges square before folding — a booklet folded from a drifting stack stays drifting on every page. Crease with a bone folder, a ruler's edge or the back of a spoon, working from the centre outward, and the spine will sit flat enough to shelve. Staple after creasing, not before: two staples, placed a quarter and three quarters along the spine, hold better than three crowded at the middle. If pages crack along the fold on heavy stock, score the outer sheet lightly along the fold line first. Finally, trim the fore-edge only if your booklet is thick — thin booklets open cleanly as folded, and an untrimmed edge is the honest mark of a handmade binding.</p>
+  <h2>Frequently Asked Questions</h2>
+  <details class="faq"><summary>Why must booklet pages be a multiple of 4?</summary><p>Each sheet carries four pages — two per side. FoldBook pads short documents with blanks at the end automatically, and the sheet map shows exactly where those blanks fall.</p></details>
+<details class="faq"><summary>Which duplex setting should I use?</summary><p>Flip on the SHORT edge. It is the booklet-correct setting; long-edge flipping (the usual default) turns alternate sides upside down.</p></details>
+<details class="faq"><summary>What size booklet will I get?</summary><p>A4 landscape sheets fold to an A5 booklet; US Letter landscape folds to a half-letter booklet. Each original page is scaled to fit its half-sheet cell without distortion.</p></details>
+<details class="faq"><summary>How thick can a fold-and-staple booklet be?</summary><p>Up to about 64 pages (16 sheets) folds and staples comfortably. Beyond that the spine bulges — split longer works into volumes for a clean result.</p></details>
+<details class="faq"><summary>How do I know the order will be right before printing?</summary><p>The sheet map lists every sheet's front and back pages. Trace it: cover outside, then 2–3, 4–5 in order as you turn. Print one test sheet and fold it if you want physical proof.</p></details>
+<details class="faq"><summary>Is my PDF uploaded anywhere?</summary><p>No. Imposition runs entirely in your browser; your document never leaves your device.</p></details>
+  </article>
+</section>
+<footer class="mt-6 py-8" style="background:#431407;color:#FFF7ED">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 text-center text-sm">
+    <p class="font-bold text-base">FoldBook</p>
+    <p class="opacity-80 mt-1">Free booklet imposition tool. Reorder any PDF's pages for double-sided fold-and-staple printing, with blank padding and a sheet-by-sheet print guide.</p>
+    <p class="mt-2"><a href="#top" class="underline">Home</a> · <a href="https://fixoraa.tech" class="underline">More Tools</a></p>
+    <p class="fx-credit" style="text-align:center;font-size:12.5px;opacity:.62;margin:10px auto 2px;letter-spacing:.01em">Made by <a href="https://fixoraa.tech" target="_blank" rel="noopener" style="color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px">Fixoraa</a></p>
+  </div>
+</footer>
+<script id="lib-foldbook">
+
+function padToFour(n){ return Math.ceil(n/4)*4; }
+function bookletOrder(n){ var total=padToFour(n); var order=[]; for(var s=0;s<total/2;s+=2){ order.push([total-1-s, s]); order.push([s+1, total-2-s]); } return order; }
+function sheetMap(n){ var o=bookletOrder(n); var sheets=[]; for(var i=0;i<o.length;i+=2){ sheets.push({sheet:i/2+1, front:o[i], back:o[i+1]}); } return sheets; }
+if (typeof module!=="undefined") module.exports={padToFour:padToFour, bookletOrder:bookletOrder, sheetMap:sheetMap};
+
+</script>
+<script>
+
+const $=id=>document.getElementById(id);
+function fmtBytes(b){if(b===0)return '0 B';const k=1024,s=['B','KB','MB','GB'];const i=Math.floor(Math.log(b)/Math.log(k));return (b/Math.pow(k,i)).toFixed(i?1:0)+' '+s[i];}
+function setStatus(m,ok){const el=$('status');if(!el)return;el.textContent=m;el.style.color=ok===false?'#dc2626':'inherit';}
+function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type:type||'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);}
+async function readFile(input){const f=input.files&&input.files[0];if(!f)throw new Error('Please choose a PDF file first.');return {file:f,buf:await f.arrayBuffer()};}
+function showDl(id,bytes,name){const b=$(id);b.style.display='inline-block';b.onclick=()=>download(bytes,name);}
+
+
+async function run(){
+  const btn=$('go'); btn.disabled=true;
+  try{
+    const {file,buf}=await readFile($('file'));
+    const src=await PDFLib.PDFDocument.load(buf.slice(0));
+    const total=src.getPageCount();
+    const padded=padToFour(total);
+    const map=sheetMap(total);
+    const dims=$('sheet').value==='a4l'?[841.89,595.28]:[792,612];
+    const [W,H]=dims;
+    const out=await PDFLib.PDFDocument.create();
+    const embedded=await out.embedPdf(await src.save());
+    const flat=[]; map.forEach(sh=>{ flat.push(sh.front); flat.push(sh.back); });
+    for(const pair of flat){
+      const sheet=out.addPage([W,H]);
+      const cw=W/2;
+      pair.forEach((pg,side)=>{
+        if(pg>=total) return; // blank padding page
+        const ep=embedded[pg]; const sc=Math.min((cw-24)/ep.width,(H-24)/ep.height);
+        const dw=ep.width*sc, dh=ep.height*sc;
+        const x=side===0? (cw-dw)/2 : W/2+(cw-dw)/2;
+        const y=(H-dh)/2;
+        sheet.drawPage(ep,{x:x,y:y,width:dw,height:dh});
+        if($('border').checked){ sheet.drawRectangle({x:side===0?6:W/2+6,y:6,width:cw-12,height:H-12,borderColor:PDFLib.rgb(0.8,0.8,0.8),borderWidth:0.5}); }
+      });
+    }
+    const bytes=await out.save();
+    $('map').innerHTML='<table class="dt"><tr><th>Sheet</th><th>Front (left | right)</th><th>Back (left | right)</th></tr>'+map.map(sh=>'<tr><td>'+sh.sheet+'</td><td>'+lbl(sh.front[0],total)+' | '+lbl(sh.front[1],total)+'</td><td>'+lbl(sh.back[0],total)+' | '+lbl(sh.back[1],total)+'</td></tr>').join('')+'</table><p class="mt-2"><b>Print guide:</b> print all '+flat.length+' sheet-sides double-sided, flip on SHORT edge, keep the stack in order, fold in half, staple twice on the fold. '+(padded>total?('Your '+total+' pages were padded with '+(padded-total)+' blank page(s) to a multiple of 4 — they fall at the end of the booklet, where blanks belong.'):'Your page count is already a multiple of 4 — no padding needed.')+'</p>';
+    showDl('dl',bytes,file.name.replace(/\.pdf$/i,'')+'-booklet.pdf');
+    setStatus('Done ✔ Booklet built: '+total+' pages on '+map.length+' sheets.');
+  }catch(e){ setStatus('⚠ '+(e.message||e),false); }
+  btn.disabled=false;
+}
+function lbl(ix,total){ return ix>=total ? 'blank' : 'p.'+(ix+1); }
+
+</script>
+</body>
+</html>
